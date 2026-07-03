@@ -47,6 +47,7 @@ type App struct {
 	inflight    map[string]mod.Module
 	quit        bool
 	pluginsSkip int
+	caps        term.Caps
 }
 
 func New(cfg config.Config, pluginsSkipped int) *App {
@@ -58,6 +59,7 @@ func New(cfg config.Config, pluginsSkipped int) *App {
 		focusNav:    true,
 		inflight:    map[string]mod.Module{},
 		pluginsSkip: pluginsSkipped,
+		caps:        term.Detect(),
 	}
 }
 
@@ -126,6 +128,7 @@ func (a *App) Prompt(label, initial string) (string, bool) {
 
 func (a *App) Run() {
 	a.scr = screen.New()
+	a.scr.SetTheme(screen.ThemeForName(a.cfg.Theme, a.caps.TrueColor))
 	a.keys = term.ReadKeys()
 	a.resize = term.WatchResize()
 	tick := time.NewTicker(200 * time.Millisecond)
@@ -260,6 +263,9 @@ func (a *App) shell() {
 
 func (a *App) contentGeom() (h, w int) {
 	h = a.scr.H - 3
+	if a.caps.Unicode {
+		h -= 2 // top + bottom border rows
+	}
 	w = a.scr.W - navW - 3
 	if h < 1 {
 		h = 1
@@ -289,9 +295,14 @@ func (a *App) drawBase() {
 	}
 	s.Put(0, s.W-len(badges)-2, badges, screen.Status, 0)
 
-	// nav
+	// nav + separator/border
+	cy := 1
+	if a.caps.Unicode {
+		cy = 2
+	}
 	for i, m := range a.modules {
-		if 1+i >= s.H-2 {
+		row := cy + i
+		if row >= s.H-2 {
 			break
 		}
 		st := screen.Normal
@@ -300,26 +311,34 @@ func (a *App) drawBase() {
 			if a.focusNav {
 				st = screen.SelectFocus
 			}
-			s.HLine(1+i, 0, navW, st)
+			s.HLine(row, 0, navW, st)
 		}
 		hot := " "
 		if i < 9 {
 			hot = string(rune('1' + i))
 		}
-		s.Put(1+i, 0, " "+hot+" "+m.Title(), st, navW)
+		s.Put(row, 0, " "+hot+" "+m.Title(), st, navW)
 	}
-	for row := 1; row < s.H-1; row++ {
-		s.Put(row, navW, "│", screen.Dim, 2)
+	if a.caps.Unicode {
+		a.drawBorders(s)
+	} else {
+		for row := 1; row < s.H-1; row++ {
+			s.Put(row, navW, "│", screen.Dim, 2)
+		}
 	}
 
 	// content
 	ch, cw := a.contentGeom()
 	focused := !a.focusNav
-	a.active().Render(s, 1, navW+2, ch, cw, focused)
+	a.active().Render(s, cy, navW+2, ch, cw, focused)
 
-	// plugin warnings, one line above status
+	// plugin warnings: last interior row so they don't stomp the border
+	warnRow := s.H - 2
+	if a.caps.Unicode {
+		warnRow = s.H - 3
+	}
 	if a.pluginsSkip > 0 {
-		s.Put(s.H-2, 1, fmt.Sprintf("! %d plugin(s) skipped — see valhall --plugins",
+		s.Put(warnRow, navW+2, fmt.Sprintf("! %d plugin(s) skipped — see valhall --plugins",
 			a.pluginsSkip), screen.Warn, 0)
 	}
 
@@ -335,6 +354,32 @@ func (a *App) drawBase() {
 		right = fmt.Sprintf("%d job(s)… ", n) + right
 	}
 	s.Put(s.H-1, s.W-len(right)-1, right, screen.Status, 0)
+}
+
+// drawBorders draws a rounded-corner box enclosing the content pane.
+// Left wall at column navW; right wall at column W-1;
+// top edge at row 1; bottom edge at row H-2.
+// Content interior: rows 2..H-3, columns navW+2..W-2 (unchanged from
+// the no-border layout — only height changes, not x or width).
+func (a *App) drawBorders(s *screen.Screen) {
+	bst := screen.Dim
+	// top edge
+	s.Put(1, navW, "╭", bst, 1)
+	for col := navW + 1; col < s.W-1; col++ {
+		s.Put(1, col, "─", bst, 1)
+	}
+	s.Put(1, s.W-1, "╮", bst, 1)
+	// side walls
+	for row := 2; row < s.H-2; row++ {
+		s.Put(row, navW, "│", bst, 1)
+		s.Put(row, s.W-1, "│", bst, 1)
+	}
+	// bottom edge
+	s.Put(s.H-2, navW, "╰", bst, 1)
+	for col := navW + 1; col < s.W-1; col++ {
+		s.Put(s.H-2, col, "─", bst, 1)
+	}
+	s.Put(s.H-2, s.W-1, "╯", bst, 1)
 }
 
 func (a *App) modal(title string, body []string, footer string) {

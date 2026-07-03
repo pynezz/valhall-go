@@ -23,6 +23,7 @@ type Config struct {
 	JournalLines       int
 	ConfirmDestructive bool
 	AllowUserPlugins   bool
+	Theme              string // dark | light | nord | gruvbox | mono
 }
 
 func xdgConfig() string {
@@ -80,6 +81,7 @@ func Load() Config {
 	}
 	cfg.ConfirmDestructive = truthy(kv["stoker.confirm_destructive"], true)
 	cfg.AllowUserPlugins = truthy(kv["stoker.allow_user_plugins"], false)
+	cfg.Theme = kv["stoker.theme"] // "" → ThemeDark default
 
 	cfg.PluginDirs = []string{SystemPluginDir, EtcPluginDir}
 	if extra := kv["plugins.dirs"]; extra != "" {

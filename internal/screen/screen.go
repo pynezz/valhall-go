@@ -35,36 +35,7 @@ const (
 	Accent
 )
 
-var sgrColor = map[Style]string{
-	Normal:      "",
-	Dim:         "\x1b[2m",
-	Title:       "\x1b[1;36m",
-	Status:      "\x1b[30;46m",
-	StatusBold:  "\x1b[1;30;46m",
-	Select:      "\x1b[7m",
-	SelectFocus: "\x1b[1;7m",
-	Focus:       "\x1b[1;36m",
-	OK:          "\x1b[32m",
-	Warn:        "\x1b[33m",
-	Err:         "\x1b[1;31m",
-	Accent:      "\x1b[35m",
-}
-
-// Monochrome fallback: attributes only, for serial consoles and dumb terms.
-var sgrMono = map[Style]string{
-	Normal:      "",
-	Dim:         "\x1b[2m",
-	Title:       "\x1b[1m",
-	Status:      "\x1b[7m",
-	StatusBold:  "\x1b[1;7m",
-	Select:      "\x1b[7m",
-	SelectFocus: "\x1b[1;7m",
-	Focus:       "\x1b[1m",
-	OK:          "\x1b[1m",
-	Warn:        "\x1b[4m",
-	Err:         "\x1b[1;4m",
-	Accent:      "\x1b[1m",
-}
+// (theme maps are defined in themes.go)
 
 type cell struct {
 	r  rune
@@ -78,14 +49,19 @@ type Screen struct {
 }
 
 func New() *Screen {
-	s := &Screen{sgr: sgrColor}
+	s := &Screen{sgr: ThemeDark}
 	t := os.Getenv("TERM")
-	if os.Getenv("NO_COLOR") != "" || t == "dumb" || t == "vt100" || t == "vt220" {
-		s.sgr = sgrMono
+	if os.Getenv("NO_COLOR") != "" || t == "dumb" || t == "vt100" || t == "vt220" || t == "linux" {
+		s.sgr = ThemeMono
 	}
 	s.UpdateSize()
 	return s
 }
+
+// SetTheme replaces the active colour map. Call after New(), before the
+// first Flush(). The map need not be complete — missing styles fall back
+// to the empty string (i.e. the terminal's default rendering).
+func (s *Screen) SetTheme(m map[Style]string) { s.sgr = m }
 
 func (s *Screen) UpdateSize() {
 	s.W, s.H = term.Size()
