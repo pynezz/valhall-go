@@ -55,5 +55,5 @@ func (p *Packages) HandleKey(h mod.Host, k term.Key, height, width int) bool {
 }
 
 func (p *Packages) Footer() string {
-	return p.CmdModule.Footer() + "  U update (detached)"
+	return p.CmdModule.Footer() + " · U update"
 }

@@ -111,7 +111,7 @@ func (o *Overview) renderLogo(s *screen.Screen, y, x, w int) {
 			col++
 		}
 	}
-	tag := "system control panel"
+	tag := "norse system control"
 	tagX := cx + (logoW-len([]rune(tag)))/2
 	s.Put(y+3, tagX, tag, screen.Dim, w-(tagX-x))
 }
@@ -294,7 +294,7 @@ func (o *Overview) Render(s *screen.Screen, y, x, h, w int, focused bool) {
 	}
 }
 
-func (o *Overview) Footer() string { return "auto-refresh 5s" }
+func (o *Overview) Footer() string { return "auto-refresh 5s · R force-refresh" }
 
 func numCPU() int {
 	data, _ := os.ReadFile("/proc/cpuinfo")

@@ -104,4 +104,4 @@ func (c *CmdModule) Render(s *screen.Screen, y, x, h, w int, focused bool) {
 	}
 }
 
-func (c *CmdModule) Footer() string { return "[/] views  / search  n next" }
+func (c *CmdModule) Footer() string { return "[ / ] views · / search · n next" }

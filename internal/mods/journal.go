@@ -157,7 +157,7 @@ func (j *Journal) Render(s *screen.Screen, y, x, h, w int, focused bool) {
 }
 
 func (j *Journal) Footer() string {
-	return "p prio  b boot  u unit  G grep  f poll-follow  F tmux-follow  / search"
+	return "p prio · b boot · u unit · G grep · f follow · F tmux-follow · / search"
 }
 
 // RegisterBuiltins wires the whole built-in inventory. Declarative

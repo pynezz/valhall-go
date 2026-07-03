@@ -18,20 +18,21 @@ import (
 	"git.pynezz.dev/pynezz/stoker/internal/tmuxx"
 )
 
-const navW = 24
+const navW = 16
 
 var globalHelp = []string{
-	"Tab        switch focus nav <-> content",
-	"1-9        jump to module",
-	"j/k arrows navigate",
-	"Enter      focus content / open item",
-	"R / F5     refresh active module",
-	"!          shell (tmux split if inside tmux)",
-	"Esc        back / clear filter",
-	"?          this help",
-	"q          quit (from nav)   Q / Ctrl-C quit anywhere",
+	"Tab      toggle focus: nav ↔ content",
+	"1-9      jump to module by number",
+	"j / k    move cursor / navigate",
+	"Enter    open / enter content pane",
+	"R / F5   refresh active module",
+	"!        shell  (tmux split when inside tmux)",
+	"Esc      back / clear filter",
+	"?        this help",
+	"q        quit  (from nav)",
+	"Q        quit  (anywhere)",
 	"",
-	"Each module shows its own keys in the bottom bar.",
+	"Module keys are shown in the bottom bar.",
 }
 
 type App struct {
@@ -233,7 +234,7 @@ func (a *App) handleKey(k term.Key) {
 
 func (a *App) helpOverlay() {
 	a.drawBase()
-	a.modal("valhall — keys", globalHelp, "any key to close")
+	a.modal("valhall  /  keys", globalHelp, "any key to close")
 	a.scr.Flush()
 	<-a.keys
 }
@@ -283,17 +284,20 @@ func (a *App) drawBase() {
 		s.Put(0, 0, "terminal too small for valhall", screen.Normal, 0)
 		return
 	}
-	// title bar
+	// title bar  ── ◆ valhall / Module ─────────────── hh:mm  priv  env ──
 	s.HLine(0, 0, s.W, screen.Status)
-	s.Put(0, 1, " valhall · "+a.active().Title()+" ", screen.StatusBold, 0)
-	badges := time.Now().Format("15:04:05") + "  " + a.pv.Badge()
+	const appLabel = " ◆ valhall"   // 10 runes
+	s.Put(0, 1, appLabel, screen.StatusBold, len([]rune(appLabel)))
+	s.Put(0, 1+len([]rune(appLabel)), "  /  "+a.active().Title(), screen.Status, s.W-12)
+	badges := time.Now().Format("15:04") + "  " + a.pv.Badge()
 	if tmuxx.Inside() {
-		badges += " tmux"
+		badges += "  tmux"
 	}
 	if os.Getenv("SSH_CONNECTION") != "" {
-		badges += " ssh"
+		badges += "  ssh"
 	}
-	s.Put(0, s.W-len(badges)-2, badges, screen.Status, 0)
+	badges = " " + badges + " "
+	s.Put(0, s.W-len(badges), badges, screen.Status, len(badges))
 
 	// nav + separator/border
 	cy := 1
@@ -305,19 +309,17 @@ func (a *App) drawBase() {
 		if row >= s.H-2 {
 			break
 		}
-		st := screen.Normal
+		st := screen.Dim
 		if i == a.activeI {
 			st = screen.Select
 			if a.focusNav {
 				st = screen.SelectFocus
 			}
 			s.HLine(row, 0, navW, st)
+			s.Put(row, 0, "▸ "+m.Title(), st, navW)
+		} else {
+			s.Put(row, 0, "  "+m.Title(), st, navW)
 		}
-		hot := " "
-		if i < 9 {
-			hot = string(rune('1' + i))
-		}
-		s.Put(row, 0, " "+hot+" "+m.Title(), st, navW)
 	}
 	if a.caps.Unicode {
 		a.drawBorders(s)
@@ -342,18 +344,18 @@ func (a *App) drawBase() {
 			a.pluginsSkip), screen.Warn, 0)
 	}
 
-	// status bar
+	// status bar  ── [mode/footer] ─────────────────────── [?  Q] ──
 	s.HLine(s.H-1, 0, s.W, screen.Status)
-	focus := "content"
 	if a.focusNav {
-		focus = "nav"
+		s.Put(s.H-1, 0, "  nav  j/k move · Enter open · 1-9 jump", screen.Status, s.W-10)
+	} else {
+		s.Put(s.H-1, 0, "  "+a.active().Footer(), screen.Status, s.W-10)
 	}
-	s.Put(s.H-1, 0, " ["+focus+"] "+a.active().Footer(), screen.Status, 0)
-	right := "? help  Q quit "
+	right := " ?  Q "
 	if n := len(a.inflight); n > 0 {
-		right = fmt.Sprintf("%d job(s)… ", n) + right
+		right = fmt.Sprintf(" %d… ", n) + right
 	}
-	s.Put(s.H-1, s.W-len(right)-1, right, screen.Status, 0)
+	s.Put(s.H-1, s.W-len(right), right, screen.StatusBold, len(right))
 }
 
 // drawBorders draws a rounded-corner box enclosing the content pane.

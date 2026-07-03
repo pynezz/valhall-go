@@ -231,7 +231,7 @@ func (u *Units) Render(s *screen.Screen, y, x, h, w int, focused bool) {
 
 func (u *Units) Footer() string {
 	if u.mode == "detail" {
-		return "Esc back  j/k scroll"
+		return "Esc back · j/k scroll"
 	}
-	return "Enter status  s start  t stop  r restart  e reload  f scope  / filter"
+	return "Enter status · s start · t stop · r restart · e reload · f scope · / filter"
 }

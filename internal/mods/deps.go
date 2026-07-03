@@ -270,7 +270,7 @@ func depsPct(n int) string {
 
 func (d *Deps) Footer() string {
 	if d.mode == "tree" {
-		return "Esc back  j/k select  Enter drill-in  r reverse"
+		return "Esc back · j/k select · Enter drill · r reverse"
 	}
-	return "Enter explore  r toggle-reverse  / filter"
+	return "Enter explore · r reverse · / filter"
 }
