@@ -72,7 +72,7 @@ func (r Result) OK() bool { return r.Err == "" && r.Code == 0 }
 // Text renders a best-effort body for a text pane.
 func (r Result) Text() string {
 	if r.Err != "" {
-		return "[stoker] " + r.Err + "\n"
+		return "[valhall] " + r.Err + "\n"
 	}
 	body := r.Stdout
 	if r.Code != 0 {

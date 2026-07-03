@@ -228,15 +228,17 @@ func (d *Deps) Render(s *screen.Screen, y, x, h, w int, focused bool) {
 			if i >= n {
 				break
 			}
-			lst := screen.Normal
 			if i == d.treeRow {
-				lst = screen.SelectFocus
+				lst := screen.SelectFocus
 				if !focused {
 					lst = screen.Select
 				}
 				s.HLine(y+1+row, x, w, lst)
+				s.Put(y+1+row, x, "▶", screen.Warn, 1)
+				s.Put(y+1+row, x+2, d.treeLines[i], lst, w-2)
+			} else {
+				s.Put(y+1+row, x, "  "+d.treeLines[i], screen.Normal, w)
 			}
-			s.Put(y+1+row, x, d.treeLines[i], lst, w)
 		}
 		return
 	}

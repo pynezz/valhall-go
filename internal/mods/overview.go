@@ -73,6 +73,49 @@ func (o *Overview) HandleKey(h mod.Host, k term.Key, height, width int) bool {
 	return false
 }
 
+// valhallLogo is the VALHALL word-mark in box-drawing characters.
+// Each line is exactly 28 runes wide: V(4) + 6×(sep+letter(3)).
+var valhallLogo = [3]string{
+	`╦  ╦ ╔═╗ ╦   ╦ ╦ ╔═╗ ╦   ╦  `,
+	`╚╗╔╝ ╠═╣ ║   ╠═╣ ╠═╣ ║   ║  `,
+	` ╚╝  ╩ ╩ ╩═╝ ╩ ╩ ╩ ╩ ╩═╝ ╩═╝`,
+}
+
+// logoShine is the cycling style palette for the shine wave.
+// A warm peak (Warn=yellow) surrounded by cyan wings fading to dim.
+var logoShine = []screen.Style{
+	screen.Dim, screen.Dim,
+	screen.Normal,
+	screen.Accent,
+	screen.Focus,
+	screen.Warn,
+	screen.Focus,
+	screen.Accent,
+	screen.Normal,
+	screen.Dim, screen.Dim,
+}
+
+func (o *Overview) renderLogo(s *screen.Screen, y, x, w int) {
+	const logoW = 28
+	cx := x + (w-logoW)/2
+	if cx < x {
+		cx = x
+	}
+	frame := int(time.Now().UnixMilli() / 200)
+	n := len(logoShine)
+	for row, line := range valhallLogo {
+		col := 0
+		for _, r := range line {
+			si := ((frame - col) % n + n) % n
+			s.Put(y+row, cx+col, string(r), logoShine[si], 1)
+			col++
+		}
+	}
+	tag := "system control panel"
+	tagX := cx + (logoW-len([]rune(tag)))/2
+	s.Put(y+3, tagX, tag, screen.Dim, w-(tagX-x))
+}
+
 func firstField(path string, prefix string) string {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -227,7 +270,12 @@ func (o *Overview) Render(s *screen.Screen, y, x, h, w int, focused bool) {
 	}
 	rows = append(rows, row{"failed units", fval, fst})
 
-	line := y
+	logoH := 0
+	if h > 7 {
+		o.renderLogo(s, y, x, w)
+		logoH = 5
+	}
+	line := y + logoH
 	for _, r := range rows {
 		s.Put(line, x, fmt.Sprintf("%14s", r.label), screen.Dim, 15)
 		s.Put(line, x+16, r.value, r.st, w-16)

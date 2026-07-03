@@ -230,7 +230,7 @@ func (a *App) handleKey(k term.Key) {
 
 func (a *App) helpOverlay() {
 	a.drawBase()
-	a.modal("stoker — keys", globalHelp, "any key to close")
+	a.modal("valhall — keys", globalHelp, "any key to close")
 	a.scr.Flush()
 	<-a.keys
 }
@@ -248,7 +248,7 @@ func (a *App) shell() {
 		if sh == "" {
 			sh = "/bin/bash"
 		}
-		fmt.Println("stoker suspended — exit the shell to return")
+		fmt.Println("valhall suspended — exit the shell to return")
 		c := exec.Command(sh)
 		c.Stdin, c.Stdout, c.Stderr = os.Stdin, os.Stdout, os.Stderr
 		_ = c.Run()
@@ -274,12 +274,12 @@ func (a *App) drawBase() {
 	s := a.scr
 	s.Clear()
 	if s.H < 8 || s.W < 50 {
-		s.Put(0, 0, "terminal too small for stoker", screen.Normal, 0)
+		s.Put(0, 0, "terminal too small for valhall", screen.Normal, 0)
 		return
 	}
 	// title bar
 	s.HLine(0, 0, s.W, screen.Status)
-	s.Put(0, 1, " stoker · "+a.active().Title()+" ", screen.StatusBold, 0)
+	s.Put(0, 1, " valhall · "+a.active().Title()+" ", screen.StatusBold, 0)
 	badges := time.Now().Format("15:04:05") + "  " + a.pv.Badge()
 	if tmuxx.Inside() {
 		badges += " tmux"
@@ -319,7 +319,7 @@ func (a *App) drawBase() {
 
 	// plugin warnings, one line above status
 	if a.pluginsSkip > 0 {
-		s.Put(s.H-2, 1, fmt.Sprintf("! %d plugin(s) skipped — see stoker --plugins",
+		s.Put(s.H-2, 1, fmt.Sprintf("! %d plugin(s) skipped — see valhall --plugins",
 			a.pluginsSkip), screen.Warn, 0)
 	}
 

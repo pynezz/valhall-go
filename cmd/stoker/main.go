@@ -1,7 +1,7 @@
-// stoker — terminal control panel for a RHEL/Fedora-family system.
+// valhall — terminal control panel for a RHEL/Fedora-family system.
 //
-// SSH-app mode: `stoker --attach` re-execs itself inside
-// `tmux new-session -A -s stoker`, attaching to an existing session or
+// SSH-app mode: `valhall --attach` re-execs itself inside
+// `tmux new-session -A -s valhall`, attaching to an existing session or
 // creating one. Point a login shell (or an sshd Match/ForceCommand) at
 // the stoker-shell wrapper and every SSH login lands in the same
 // persistent TUI — surviving disconnects, sshd restarts mid-update,
@@ -42,7 +42,7 @@ func realMain() int {
 	flag.Parse()
 
 	if *flagVersion {
-		fmt.Println("stoker", version)
+		fmt.Println("valhall", version)
 		return 0
 	}
 
@@ -53,12 +53,12 @@ func realMain() int {
 		if tmux := run.Resolve("tmux"); tmux != "" {
 			self, err := os.Executable()
 			if err == nil {
-				argv := []string{tmux, "new-session", "-A", "-s", "stoker", self}
+				argv := []string{tmux, "new-session", "-A", "-s", "valhall", self}
 				_ = syscall.Exec(tmux, argv, os.Environ())
 				// Exec only returns on failure; fall through.
 			}
 		}
-		fmt.Fprintln(os.Stderr, "stoker: tmux unavailable, running without session persistence")
+		fmt.Fprintln(os.Stderr, "valhall: tmux unavailable, running without session persistence")
 	}
 
 	cfg := config.Load()
@@ -86,7 +86,7 @@ func realMain() int {
 	}
 
 	if err := term.EnterRaw(); err != nil {
-		fmt.Fprintln(os.Stderr, "stoker: not a tty (use --check for headless mode):", err)
+		fmt.Fprintln(os.Stderr, "valhall: not a tty (use --check for headless mode):", err)
 		return 2
 	}
 	// Terminal restore must survive every exit path, panics included —
@@ -96,7 +96,7 @@ func realMain() int {
 		defer func() {
 			if r := recover(); r != nil {
 				term.Restore()
-				fmt.Fprintf(os.Stderr, "stoker panic: %v\n%s", r, debug.Stack())
+				fmt.Fprintf(os.Stderr, "valhall panic: %v\n%s", r, debug.Stack())
 				code = 1
 				return
 			}

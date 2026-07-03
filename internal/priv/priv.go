@@ -45,7 +45,7 @@ func (p *Priv) Wrap(argv []string) []string {
 }
 
 func (p *Priv) Hint() string {
-	return "root required: run stoker as root, or grant NOPASSWD sudo for the specific commands (visudo)"
+	return "root required: run valhall as root, or grant NOPASSWD sudo for the specific commands (visudo)"
 }
 
 func (p *Priv) Badge() string {

@@ -73,7 +73,7 @@ func Window(name string, argv []string) error {
 		parts = append(parts, "'"+a+"'")
 	}
 	if !safeArg.MatchString(name) {
-		name = "stoker-job"
+		name = "valhall-job"
 	}
 	t := []string{"tmux", "new-window", "-d", "-n", name, strings.Join(parts, " ")}
 	res := run.Do(t, 5*time.Second)

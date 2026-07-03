@@ -33,7 +33,7 @@ func NewPackages() *Packages {
 func (p *Packages) HandleKey(h mod.Host, k term.Key, height, width int) bool {
 	if k.R == 'U' {
 		if !h.InTmux() {
-			p.Msg = "U needs tmux — the update must survive this session (run stoker --attach)"
+			p.Msg = "U needs tmux — the update must survive this session (run valhall --attach)"
 			return true
 		}
 		if !h.Confirm("run 'dnf -y update' in a detached tmux window?") {

@@ -92,7 +92,7 @@ func (j *Journal) HandleKey(h mod.Host, k term.Key, height, width int) bool {
 		}
 	case 'F': // live follow in a tmux split
 		if !h.InTmux() {
-			j.msg = "F needs tmux — run stoker inside a tmux session"
+			j.msg = "F needs tmux — run valhall inside a tmux session"
 			return true
 		}
 		args := []string{"journalctl", "-f", "-o", "short-iso",
