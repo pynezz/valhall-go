@@ -1,0 +1,18 @@
+#!/bin/sh
+# stoker-shell: login shell for the SSH-app pattern.
+#
+# Every SSH login attaches to (or creates) the persistent tmux session
+# running stoker. Disconnects, sshd restarts mid-update, and closed
+# laptop lids all leave the session running; the next login reattaches
+# to the exact same state.
+#
+# Install:
+#   install -m 0755 stoker-shell /usr/local/bin/stoker-shell
+#   usermod -s /usr/local/bin/stoker-shell ops     # dedicated ops user
+# or keep your shell and add to ~/.bash_profile:
+#   [ -n "$SSH_CONNECTION" ] && [ -z "$TMUX" ] && exec stoker --attach
+#
+# NOTE: this is convenience, not confinement — stoker's '!' opens a
+# shell. A restricted account needs ForceCommand plus a build with the
+# shell escape removed.
+exec /usr/bin/stoker --attach
